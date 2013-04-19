@@ -14,7 +14,7 @@ from . import models
 from . import settings
 
 
-class BasePrivateFileView(SingleObjectMixin, View): pass
+class BasePrivateFileView(SingleObjectMixin, View):
     check_modified = True
     parentpk_kwarg = 'attachedto_pk'
 
