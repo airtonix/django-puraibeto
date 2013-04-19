@@ -1,7 +1,8 @@
 import os
 import mimetypes
 
-from django.views.detail import SingleObjectMixin
+from django.views.generic import View, ListView, DetailView
+from django.views.generic.detail import SingleObjectMixin
 from django.views.static import was_modified_since
 from django.http import HttpResponse, Http404, HttpResponseRedirect, HttpResponseNotModified
 from django.utils.http import http_date, parse_http_date
@@ -14,12 +15,17 @@ from . import models
 from . import settings
 
 
-class BasePrivateFileView(SingleObjectMixin, View): pass
-    check_modified = True
+
+class PrivateFileMixin(object):
     parentpk_kwarg = 'attachedto_pk'
+    model = models.PrivateFile
 
     def get_queryset(self):
         return models.PrivateFile.objects.filter(object_id=self.kwargs.get(self.parentpk_kwarg))
+
+
+class BasePrivateFileView(PrivateFileMixin, SingleObjectMixin, View):
+    check_modified = True
 
     def get_object(self, queryset=None):
         obj = super(BasePrivateFileView, self).get_object(queryset)
@@ -116,6 +122,7 @@ Backends = {
 if not getattr(settings, 'BACKEND', False):
         raise ImproperlyConfigured('You need to set PURAIBETO_BACKEND in your project settings to either ')
 
-PrivateFileView = Backends.get(settings.BACKEND, 'basic')
+PrivateFileView = Backends.get(settings.BACKEND)
 
 
+class PrivateFileListView(PrivateFileMixin, ListView): pass

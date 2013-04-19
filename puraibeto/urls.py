@@ -1,14 +1,15 @@
 from django.conf import settings
 from django.conf.urls.defaults import patterns, include
 
+from surlex import register_macro
+from surlex.dj import surl
+
 from . import views
-from surlex.dj import url
 
 register_macro('f',r"[^\s\/]+$")
 
 urlpatterns = patterns('',
-    url('^download/<pk:#>/<filename:f>$',
-        views.PrivateFileView.as_view(),
-        name = "puraibeto_download"),
+    surl(r'^/$', views.PrivateFileListView.as_view(), name="puraibeto_files"),
+    surl(r'^download/<pk:#>/<filename:f>$', views.PrivateFileView.as_view(), name="puraibeto_download"),
 )
 

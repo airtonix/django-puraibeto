@@ -9,11 +9,13 @@
 *.coffee
 *.log
 *.pid
+*.egg-info
 *.py[co]
 *.sublime*
 *~
 .codeintel/
 .git/
+.tox/
 .hg/
 .hgignore
 .idea/

@@ -1,5 +1,8 @@
+from uuid import uuid4
+
 from django.db import models
 from django.contrib.contenttypes.models import ContentType
+from django.contrib.contenttypes import generic
 from django.utils.translation import ugettext_lazy as _
 
 from . import fields
@@ -8,13 +11,33 @@ from . import settings
 
 
 class AttachedFileBase(models.Model):
+    def upload_path(instance, filename):
+        klassname = instance.attached_to.__class__.__name__.lower()
+        filename = "private/{file_uuid}/{filename}".format(
+            file_uuid=instance.uuid,
+            filename=filename)
+
+        if hasattr(instance.attached_to, 'get_uploadpath'):
+            return instance.attached_to.get_uploadpath(instance, filename)
+
+        return "{klass}/{klass_id}/".format(
+            klass=klassname,
+            klass_id=instance.object_id,
+            filename=filename)
+
     content_type = models.ForeignKey(ContentType)
     object_id = models.PositiveIntegerField()
     attached_to = generic.GenericForeignKey('content_type', 'object_id')
 
-    file = fields.PrivateFileField()
-    name = models.CharField(verbose_name=_('Name'), blank=True, null=True)
-    description = models.TextField(verbose_name=("Description"), blank=True, null=True)
+    file = fields.PrivateFileField(upload_to=upload_path)
+    uuid = models.CharField(verbose_name=_('UUID'),
+                            blank=True, null=True,
+                            max_length=256, unique=True,
+                            default=lambda: str(uuid4()))
+    name = models.CharField(verbose_name=_('Name'),
+        blank=True, null=True, max_length=255)
+    description = models.TextField(verbose_name=("Description"),
+        blank=True, null=True, max_length=255)
 
     class Meta:
         abstract = True
