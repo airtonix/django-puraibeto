@@ -9,6 +9,7 @@
 *.coffee
 *.log
 *.pid
+*.egg-info/
 *.py[co]
 *.sublime*
 *~
