@@ -7,7 +7,11 @@
 # Virtualenv artifacts
 #gedit backups
 *.coffee
+<<<<<<< HEAD
+*.egg-info
+=======
 *.egg-info/
+>>>>>>> master
 *.log
 *.pid
 *.egg-info/
@@ -25,6 +29,7 @@
 .settings
 .tags
 .tags_sorted_by_file
+.tox/
 .ve
 /build
 /cache

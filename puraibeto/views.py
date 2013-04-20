@@ -1,25 +1,29 @@
 import os
 import mimetypes
 
-from django.views.detail import SingleObjectMixin
+from django.views.generic import View, ListView, DetailView, CreateView, UpdateView
+from django.views.generic.detail import SingleObjectMixin
 from django.views.static import was_modified_since
 from django.http import HttpResponse, Http404, HttpResponseRedirect, HttpResponseNotModified
 from django.utils.http import http_date, parse_http_date
 from django.contrib.admin.util import unquote
 from django.core.exceptions import PermissionDenied, ImproperlyConfigured
 
-
 from . import signals
 from . import models
-from . import settings
+from .conf import settings
 
 
-class BasePrivateFileView(SingleObjectMixin, View):
+class PrivateFileMixin(object):
     check_modified = True
     parentpk_kwarg = 'attachedto_pk'
+    model = models.PrivateFile
 
     def get_queryset(self):
         return models.PrivateFile.objects.filter(object_id=self.kwargs.get(self.parentpk_kwarg))
+
+
+class BasePrivateFileView(PrivateFileMixin, SingleObjectMixin, View):
 
     def get_object(self, queryset=None):
         obj = super(BasePrivateFileView, self).get_object(queryset)
@@ -113,9 +117,9 @@ Backends = {
     'basic' : BasePrivateFileView,
 }
 
-if not getattr(settings, 'BACKEND', False):
-        raise ImproperlyConfigured('You need to set PURAIBETO_BACKEND in your project settings to either ')
+PrivateFileDownloadView = Backends.get(settings.PURAIBETO_BACKEND)
 
-PrivateFileView = Backends.get(settings.BACKEND, 'basic')
-
-
+class PrivateFileListView(PrivateFileMixin, ListView): pass
+class PrivateFileCreateView(PrivateFileMixin, CreateView): pass
+class PrivateFileDetailView(PrivateFileMixin, DetailView): pass
+class PrivateFileUpdateView(PrivateFileMixin, UpdateView): pass
