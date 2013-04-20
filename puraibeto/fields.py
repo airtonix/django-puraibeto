@@ -3,6 +3,8 @@ import os
 from django.db.models.fields.files import FileField, ImageField, ImageFieldFile, FieldFile
 from django.core.urlresolvers import reverse
 
+from .conf import settings
+
 
 class PrivateFieldFile(FieldFile):
 

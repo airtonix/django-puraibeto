@@ -7,9 +7,14 @@
 # Virtualenv artifacts
 #gedit backups
 *.coffee
+<<<<<<< HEAD
+*.egg-info
+=======
 *.egg-info/
+>>>>>>> master
 *.log
 *.pid
+*.egg-info/
 *.py[co]
 *.sublime*
 *~
@@ -24,6 +29,7 @@
 .settings
 .tags
 .tags_sorted_by_file
+.tox/
 .ve
 /build
 /cache
