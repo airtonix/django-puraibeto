@@ -7,9 +7,14 @@
 # Virtualenv artifacts
 #gedit backups
 *.coffee
+<<<<<<< HEAD
 *.egg-info
+=======
+*.egg-info/
+>>>>>>> master
 *.log
 *.pid
+*.egg-info/
 *.py[co]
 *.sublime*
 *~
@@ -31,6 +36,7 @@
 /config/mode.cfg
 /config/ssl/*
 /db
+/dist
 /environ
 /files
 /logs

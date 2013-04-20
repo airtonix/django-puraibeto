@@ -6,12 +6,11 @@ from django.contrib.contenttypes import generic
 from django.utils.translation import ugettext_lazy as _
 
 from . import fields
-from . import settings
-
+from .conf import settings
 
 
 class AttachedFileBase(models.Model):
-    def upload_path(instance, filename):
+    def get_uploadpath(instance, filename):
         klassname = instance.attached_to.__class__.__name__.lower()
         filename = "private/{file_uuid}/{filename}".format(
             file_uuid=instance.uuid,
@@ -29,11 +28,12 @@ class AttachedFileBase(models.Model):
     object_id = models.PositiveIntegerField()
     attached_to = generic.GenericForeignKey('content_type', 'object_id')
 
-    file = fields.PrivateFileField(upload_to=upload_path)
+    file = fields.PrivateFileField(verbose_name=_('File'), upload_to=get_uploadpath)
     uuid = models.CharField(verbose_name=_('UUID'),
                             blank=True, null=True,
                             max_length=256, unique=True,
                             default=lambda: str(uuid4()))
+
     name = models.CharField(verbose_name=_('Name'),
         blank=True, null=True, max_length=255)
     description = models.TextField(verbose_name=("Description"),

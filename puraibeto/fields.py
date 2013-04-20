@@ -3,6 +3,8 @@ import os
 from django.db.models.fields.files import FileField, ImageField, ImageFieldFile, FieldFile
 from django.core.urlresolvers import reverse
 
+from .conf import settings
+
 
 class PrivateFieldFile(FieldFile):
 
@@ -13,9 +15,9 @@ class PrivateFieldFile(FieldFile):
         model_name  = self.instance._meta.object_name.lower()
         field_name = self.field.name
         filename = os.path.basename(self.path)
+
         return reverse('puraibeto_download', args=[
-            self.intsance.attached_to.pk,
-            self.instance.pk])
+            self.intsance.attached_to.pk, self.instance.uuid, filename])
 
     @property
     def contidion(self):

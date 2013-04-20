@@ -1,10 +1,10 @@
 from django.contrib import admin
-from django.conf import settings
 from django.core.urlresolvers import reverse, reverse_lazy
 
 from guardian.admin import GuardedModelAdmin
 
 from . import models
+from .conf import settings
 
 
 class PrivateFileAdmin(GuardedModelAdmin):
