@@ -6,29 +6,58 @@ from django.views.generic.detail import SingleObjectMixin
 from django.views.static import was_modified_since
 from django.http import HttpResponse, Http404, HttpResponseRedirect, HttpResponseNotModified
 from django.utils.http import http_date, parse_http_date
-from django.contrib.admin.util import unquote
 from django.core.exceptions import PermissionDenied, ImproperlyConfigured
+from django.contrib.admin.util import unquote
+from django.contrib.contenttypes.models import ContentType
+
+from guardian.models import UserObjectPermission
+from guardian.shortcuts import assign_perm, remove_perm, get_perms
 
 from . import signals
 from . import models
 from .conf import settings
 
 
+
 class PrivateFileMixin(object):
     check_modified = True
-    parentpk_kwarg = 'attachedto_pk'
     model = models.PrivateFile
+    pk_kwarg = "pk"
+    contenttype_kwarg = 'contenttype'
+    contenttypepk_kwarg = "contenttype_pk"
+    objectpk_kwarg = "object_pk"
 
     def get_queryset(self):
-        return models.PrivateFile.objects.filter(object_id=self.kwargs.get(self.parentpk_kwarg))
+        contenttype = self.kwargs.get(self.contenttype_kwarg)
+        contenttype_pk = self.kwargs.get(self.contenttypepk_kwarg)
+        object_pk = self.kwargs.get(self.objectpk_kwarg)
+
+        queryset = models.PrivateFile.objects.filter(
+            content_type_id=contenttype_pk,
+            object_id=object_pk,
+        )
+        return queryset
+
+    def get_object(self, queryset):
+        self.object = queryset.get(**{self.pk_kwarg: self.kwargs.get(self.pk_kwarg)})
+
 
 
 class BasePrivateFileView(PrivateFileMixin, SingleObjectMixin, View):
 
-    def get_object(self, queryset=None):
-        obj = super(BasePrivateFileView, self).get_object(queryset)
+    def dispatch(self, request, *args, **kwargs):
+        return super(PrivateFileMixin, self).dispatch(request, *args, **kwargs)
 
-        field_file = getattr(obj, 'file', None)
+    def get(self, *args, **kwargs):
+        self.object = self.get_object(self.get_queryset())
+        return self.render_to_response()
+
+    def get_object(self, queryset):
+        super(BasePrivateFileView, self).get_object(queryset)
+
+        field_file = getattr(self.object, 'file', None)
+        if not settings.PURAIBETO_PERMISSION_CANDOWNLOAD in get_perms(self.request.user, self.object):
+            raise PermissionDenied
 
         if not field_file:
             raise Http404("File not available yet.")
@@ -38,6 +67,7 @@ class BasePrivateFileView(PrivateFileMixin, SingleObjectMixin, View):
         self.encoding = encoding or 'utf-8'
         self.statobj = os.stat(field_file.path)
         self.basename = os.path.basename(field_file.path)
+        return self.object
 
 
     def set_headers(self):
@@ -46,27 +76,20 @@ class BasePrivateFileView(PrivateFileMixin, SingleObjectMixin, View):
         self.response["Content-Length"] = self.statobj.st_size
 
         attachment = getattr(field_file, 'attachment', False)
-
         if attachment:
-            response['Content-Disposition'] = 'attachment; filename={}'.format(self.basename)
-
+            self.response['Content-Disposition'] = 'attachment; filename={}'.format(self.basename)
         if self.encoding:
-            response["Content-Encoding"] = self.encoding
+            self.response["Content-Encoding"] = self.encoding
 
     def get_response(self):
-        field_file.open()
-        self.response = HttpResponse(field_file.file.read(), mimetype=self.mimetype)
-        field_file.close()
-
+        file_obj = self.object.file
+        file_obj.open()
+        self.response = HttpResponse(file_obj.file.read(), mimetype=self.mimetype)
+        file_obj.close()
         return self.response
 
     def render_to_response(self, *args, **kwargs):
-        field_file = self.object.file
-
-        condition = getattr(field_file, condition, None)
-
-        if condition != None and not condition(self.request, self.object):
-            raise PermissionDenied()
+        condition = getattr(self.object.file, 'condition', None)
 
         if self.check_modified and not was_modified_since(
                 self.request.META.get('HTTP_IF_MODIFIED_SINCE'),
@@ -82,7 +105,7 @@ class BasePrivateFileView(PrivateFileMixin, SingleObjectMixin, View):
             instance = self.object,
             request = self.request)
 
-        return response
+        return self.response
 
 
 class NginxPrivateFileView(BasePrivateFileView):

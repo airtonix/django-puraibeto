@@ -1,27 +1,27 @@
+import os
 from uuid import uuid4
 
 from django.db import models
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes import generic
 from django.utils.translation import ugettext_lazy as _
+from django.core.urlresolvers import reverse
+
+from guardian.models import UserObjectPermission
+from guardian.shortcuts import assign_perm, remove_perm, get_perms
 
 from . import fields
+from . import signals
 from .conf import settings
 
 
 class AttachedFileBase(models.Model):
     def get_uploadpath(instance, filename):
-        klassname = instance.attached_to.__class__.__name__.lower()
-        filename = "private/{file_uuid}/{filename}".format(
-            file_uuid=instance.uuid,
-            filename=filename)
-
-        if hasattr(instance.attached_to, 'get_uploadpath'):
-            return instance.attached_to.get_uploadpath(instance, filename)
-
-        return "{klass}/{klass_id}/".format(
-            klass=klassname,
-            klass_id=instance.object_id,
+        return "private/{content_type}/{contenttype_pk}/{object_id}/{uuid}-{filename}".format(
+            content_type=instance.content_type.name.lower(),
+            contenttype_pk=instance.content_type_id,
+            object_id=instance.object_id,
+            uuid=instance.uuid,
             filename=filename)
 
     content_type = models.ForeignKey(ContentType)
@@ -33,31 +33,38 @@ class AttachedFileBase(models.Model):
                             blank=True, null=True,
                             max_length=256, unique=True,
                             default=lambda: str(uuid4()))
-
     name = models.CharField(verbose_name=_('Name'),
-        blank=True, null=True, max_length=255)
+                            blank=True, null=True, max_length=255)
     description = models.TextField(verbose_name=("Description"),
-        blank=True, null=True, max_length=255)
+                                   blank=True, null=True, max_length=255)
 
     class Meta:
         abstract = True
         permissions = (
-            ('can_view', 'Can see file in lists'),
-            ('can_download', 'Can download file'),
-            ('can_remove', 'Can remove file'),
+            (settings.PURAIBETO_PERMISSION_CANVIEW, 'Can view'),
+            (settings.PURAIBETO_PERMISSION_CANDOWNLOAD, 'Can download file'),
         )
 
     def __unicode__(self):
         return self.name
 
+    def save(self):
+        if not self.id:
+            super(AttachedFileBase, self).save()
+        signals.model_saved.send(sender=self)
+
     @models.permalink
-    def get_absolute_url(self):
-        # for now we'll assume you're attaching your urlpatterns under a
-        # route that uses 'attached_pk' as a url argument
-        return ('puraibeto_download', (), {
-            'attached_pk': self.object_id,
-            'pk': self.pk,
-        })
+    def get_download_url(self):
+        return ('puraibeto_download', [
+            self.content_type_id,
+            self.object_id,
+            self.pk,
+            self.uuid,
+            self.filename() ])
+
+    def filename(self):
+        return str(os.path.basename(self.file.path))
+
 
 
 class PrivateFile(AttachedFileBase): pass

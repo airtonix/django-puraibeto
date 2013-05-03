@@ -6,8 +6,8 @@ from surlex.dj import surl
 from . import views
 from .conf import settings
 
-register_macro('f', r"[^\s\/]+$")
-register_macro('u', r'[a-fA-F0-9]{8}-?[a-fA-F0-9]{4}-?[a-fA-F0-9]{4}-?[a-fA-F0-9]{4}-?[a-fA-F0-9]{12}')
+register_macro('f', r"[^\s\/]+")
+register_macro('uuid', r"[a-fA-F0-9]{8}-?[a-fA-F0-9]{4}-?[a-fA-F0-9]{4}-?[a-fA-F0-9]{4}-?[a-fA-F0-9]{12}")
 
 urlpatterns = patterns('',
 
@@ -19,16 +19,15 @@ urlpatterns = patterns('',
         views.PrivateFileCreateView.as_view(),
         name="puraibeto_upload"),
 
-    surl(r'^<pk:#>/<uuid:u>/$',
-        views.PrivateFileDetailView.as_view(),
-        name="puraibeto_detail"),
+    # surl(r'^<pk:#>/<uuid:uuid>/$',
+    #     views.PrivateFileDetailView.as_view(),
+    #     name="puraibeto_detail"),
 
-    surl(r'^<pk:#>/<uuid:u>/edit/$',
-        views.PrivateFileUpdateView.as_view(),
-        name="puraibeto_update"),
+    # surl(r'^<pk:#>/<uuid:uuid>/edit/$',
+    #     views.PrivateFileUpdateView.as_view(),
+    #     name="puraibeto_update"),
 
-
-    surl(r'^<pk:#>/download/<uuid:u>-<filename:f>$',
+    surl(r'^download/<contenttype_pk:#>/<object_pk:#>/<pk:#>/<uuid:uuid>-<filename:f>$',
         views.PrivateFileDownloadView.as_view(),
         name="puraibeto_download"),
 )
