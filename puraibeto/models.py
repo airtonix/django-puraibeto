@@ -2,15 +2,23 @@ import os
 from uuid import uuid4
 
 from django.db import models
+from django.contrib.auth.models import User
+from django.core.exceptions import ImproperlyConfigured
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes import generic
 from django.utils.translation import ugettext_lazy as _
 
-from guardian.shortcuts import assign_perm
 
 from . import fields
 from . import signals
 from .conf import settings
+
+
+if settings.PURAIBETO_CHECK_PERMISSIONS:
+    if not "guardian" in settings.INSTALLED_APPS:
+        raise ImproperlyConfigured("PURAIBETO_CHECK_PERMISSIONS = True requires that you have django-guardian installed. ")
+    if not "guardian.backends.ObjectPermissionBackend" in settings.AUTHENTICATION_BACKENDS:
+        raise ImproperlyConfigured("PURAIBETO_CHECK_PERMISSIONS = True requires that you have 'guardian.backends.ObjectPermissionBackend' listed in settings.AUTHENTICATION_BACKENDS.")
 
 
 class AttachedFileBase(models.Model):
@@ -62,6 +70,18 @@ class AttachedFileBase(models.Model):
 
     def filename(self):
         return str(os.path.basename(self.file.path))
+
+    def can_user_view(self, user=None):
+        if settings.PURAIBETO_CHECK_PERMISSIONS:
+            if not isinstance(user, User):
+                return False
+            return user.has_perm(settings.PURAIBETO_PERMISSION_CANVIEW, user_or_group=user, obj=self)
+
+    def can_user_download(self, user=None):
+        if settings.PURAIBETO_CHECK_PERMISSIONS:
+            if not isinstance(user, User):
+                return False
+            return user.has_perm(settings.PURAIBETO_PERMISSION_CANDOWNLOAD, user_or_group=user, obj=self)
 
 
 class PrivateFile(AttachedFileBase):

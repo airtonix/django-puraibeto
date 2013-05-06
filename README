@@ -14,49 +14,49 @@ model and serving them conditionally.
 Table of Contents
 =================
 
-	1 Installation
-	2 Settings
-	3 Models
-		3.1 Permissions
-	4 Middleware
-	5 Views
-	6 URLs
-	7 Templates
-	8 License
+  1 Installation
+  2 Settings
+  3 Models
+    3.1 Permissions
+  4 Middleware
+  5 Views
+  6 URLs
+  7 Templates
+  8 License
 
 
 1 Installation
 ==============
 
-	`pip install django-puraibeto`
+  `pip install django-puraibeto`
 
-	In order to use application, add `puraibeto' to INSTALLED_APPS in
-	your django projects `settings.py' file.
+  In order to use application, add `puraibeto' to INSTALLED_APPS in
+  your django projects `settings.py' file.
 
 
 1.1 Dependancies
 ================
 
-	Puraibeto depends on some pivotal django apps :
+  Puraibeto depends on some pivotal django apps :
 
-		Guardian
+    Guardian
 
-			We use this for per object permissions, it's nice to be able to 
-			say who can access what file.
+      We use this for per object permissions, it's nice to be able to 
+      say who can access what file.
 
-		Surlex
+    Surlex
 
-			I'm lazy and dislike regex patterns all up in my url patterns, surlex
-			makes it nice.
+      I'm lazy and dislike regex patterns all up in my url patterns, surlex
+      makes it nice.
 
-		Classy Tags
+    Classy Tags
 
-			Creating template tags can be messy and complicated, classy tags keeps
-			it all neat and tidy.
+      Creating template tags can be messy and complicated, classy tags keeps
+      it all neat and tidy.
 
-		Appconf
+    Appconf
 
-			More of me being lazy.
+      More of me being lazy.
 
 
 
@@ -68,11 +68,11 @@ Table of Contents
 3 Models
 ========
 
-	PrivateFile
-		attached_to       : generic foreign key
-		get_absolute_url  : reversed url to download
-		can_user_access   : check if the supplied user is allowed
-							to access the file
+  PrivateFile
+    attached_to       : generic foreign key
+    get_absolute_url  : reversed url to download
+    can_user_view     : check if the supplied user is allowed to view the file in lists or detail
+    can_user_download : check if the supplied user is allowed to download the file
 
 
 3.1 Permissions
@@ -83,18 +83,18 @@ Table of Contents
 3.2 Urls
 ========
 
-	The way puraibeto deals with url routing is by providing a set of urlpatterns for you to anchor under your own url patterns that describe your models detail. for example :
+  The way puraibeto deals with url routing is by providing a set of urlpatterns for you to anchor under your own url patterns that describe your models detail. for example :
 
-	Lets say you have an urlconf with something like the following:
+  Lets say you have an urlconf with something like the following:
 
-		surl(r'^awesome/<pk:#>/$',
-			MyAwesomeDetailView.as_view(),
-			name='awesome-detail'
-		),
+    surl(r'^awesome/<pk:#>/$',
+      MyAwesomeDetailView.as_view(),
+      name='awesome-detail'
+    ),
 
-	And you want to enable private file attachments for the model related to `MyAwesomeDetailView` (lets assume it's `MyAwesomeness` ) then in the same url patterns you'd also have :
+  And you want to enable private file attachments for the model related to `MyAwesomeDetailView` (lets assume it's `MyAwesomeness` ) then in the same url patterns you'd also have :
 
-		surl(r'^awesome/<attachedto_pk:#>/files/', include('puraibeto.urls')),
+    surl(r'^awesome/<attachedto_pk:#>/files/', include('puraibeto.urls')),
 
 
 3.3 Views
@@ -110,4 +110,4 @@ Table of Contents
 4 License
 =========
 
-	This project is licensed all rights reserved. until further notice.
+  This project is licensed all rights reserved. until further notice.
