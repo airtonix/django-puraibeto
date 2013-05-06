@@ -5,10 +5,8 @@ from django.db import models
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes import generic
 from django.utils.translation import ugettext_lazy as _
-from django.core.urlresolvers import reverse
 
-from guardian.models import UserObjectPermission
-from guardian.shortcuts import assign_perm, remove_perm, get_perms
+from guardian.shortcuts import assign_perm
 
 from . import fields
 from . import signals
@@ -60,11 +58,11 @@ class AttachedFileBase(models.Model):
             self.object_id,
             self.pk,
             self.uuid,
-            self.filename() ])
+            self.filename()])
 
     def filename(self):
         return str(os.path.basename(self.file.path))
 
 
-
-class PrivateFile(AttachedFileBase): pass
+class PrivateFile(AttachedFileBase):
+    pass
