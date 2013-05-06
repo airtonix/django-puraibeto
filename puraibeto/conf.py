@@ -4,6 +4,7 @@ from appconf import AppConf
 
 class PuraibetoConf(AppConf):
     BACKEND = "basic"
+    CHECK_PERMISSIONS = True
     PERMISSION_CANDOWNLOAD = 'download_privatefile'
     PERMISSION_CANCREATE = 'add_privatefile'
     PERMISSION_CANVIEW = 'view_privatefile'
