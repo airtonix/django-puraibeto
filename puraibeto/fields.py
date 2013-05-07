@@ -1,5 +1,3 @@
-import os
-
 from django.db.models.fields.files import FileField, FieldFile
 from django.core.urlresolvers import reverse
 
@@ -9,13 +7,7 @@ class PrivateFieldFile(FieldFile):
     @property
     def url(self):
         self._require_file()
-        filename = os.path.basename(self.path)
-        return reverse('puraibeto_download', kwargs={
-            "contenttype_pk": self.instance.content_type_id,
-            "object_pk": self.instance.object_id,
-            "pk": self.instance.pk,
-            "uuid": self.instance.uuid,
-            "filename": filename})
+        return self.instance.get_download_url(self.field.name)
 
     @property
     def contidion(self):
