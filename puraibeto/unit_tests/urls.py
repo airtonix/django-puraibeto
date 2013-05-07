@@ -9,5 +9,5 @@ admin.autodiscover()
 urlpatterns = patterns('',
 	surl(r'^thing/$', views.ThingListView.as_view(), name="thing-list"),
 	surl(r'^thing/<pk:#>/$', views.ThingDetailView.as_view(), name="thing-detail"),
-	surl(r'^thing/<attachedto_pk:#>/files/', include('puraibeto.urls') ),
+	surl(r'^private/', include('puraibeto.urls') ),
 )
