@@ -27,7 +27,7 @@ urlpatterns = patterns('',
     #     views.PrivateFileUpdateView.as_view(),
     #     name="puraibeto_update"),
 
-    surl(r'^download/<contenttype_pk:#>/<object_pk:#>/<pk:#>/<uuid:uuid>-<filename:f>$',
+    surl(r'^download/<contenttype_pk:#>/<object_pk:#>/<pk:#>/<filename:f>$',
         views.PrivateFileDownloadView.as_view(),
         name="puraibeto_download"),
 )

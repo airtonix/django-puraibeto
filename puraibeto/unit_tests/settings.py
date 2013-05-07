@@ -1,4 +1,5 @@
 # Django settings for test_project project.
+from django.conf import global_settings
 
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
@@ -123,6 +124,7 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     'django.contrib.admin',
     'django.contrib.admindocs',
+    'guardian',
     'puraibeto',
     'puraibeto.unit_tests',
 )
@@ -155,3 +157,9 @@ LOGGING = {
         },
     }
 }
+
+PURAIBETO_CHECK_PERMISSIONS = True
+
+AUTHENTICATION_BACKENDS = global_settings.AUTHENTICATION_BACKENDS + (
+    'guardian.backends.ObjectPermissionBackend',
+)

@@ -7,7 +7,8 @@ from django.core.exceptions import ImproperlyConfigured
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes import generic
 from django.utils.translation import ugettext_lazy as _
-
+from django.template.defaultfilters import slugify
+from django.core.urlresolvers import reverse
 
 from . import fields
 from . import signals
@@ -23,12 +24,25 @@ if settings.PURAIBETO_CHECK_PERMISSIONS:
 
 class AttachedFileBase(models.Model):
     def get_uploadpath(instance, filename):
+        ext = None
+        if "." in filename:
+            filename, ext = filename.split(".")
+
+        if " " in filename:
+            filename = slugify(filename)
+
+        filename = filename.lower()
+
+        if not ext is None:
+            filename = filename+"."+ext
+
         return "private/{content_type}/{contenttype_pk}/{object_id}/{uuid}-{filename}".format(
             content_type=instance.content_type.name.lower(),
             contenttype_pk=instance.content_type_id,
             object_id=instance.object_id,
             uuid=instance.uuid,
-            filename=filename)
+            filename=filename
+        )
 
     content_type = models.ForeignKey(ContentType)
     object_id = models.PositiveIntegerField()
@@ -54,19 +68,25 @@ class AttachedFileBase(models.Model):
     def __unicode__(self):
         return self.name
 
-    def save(self):
-        if not self.id:
-            super(AttachedFileBase, self).save()
-        signals.model_saved.send(sender=self)
+    def get_download_url(self, *args, **kwargs):
+        return reverse('puraibeto_download', kwargs={
+            "contenttype_pk": self.content_type_id,
+            "object_pk": self.object_id,
+            "pk": self.id,
+            # "uuid": self.uuid,
+            "filename": self.filename()
+        })
+        #     surl(r'^download/<contenttype_pk:#>/<object_pk:#>/<pk:#>/<uuid:uuid>-<filename:f>$',
 
-    @models.permalink
-    def get_download_url(self):
-        return ('puraibeto_download', [
-            self.content_type_id,
-            self.object_id,
-            self.pk,
-            self.uuid,
-            self.filename()])
+    def save(self, *args, **kwargs):
+        if not self.pk:
+            super(AttachedFileBase, self).save(*args, **kwargs)
+
+        if not self.name or len(self.name) <= 0:
+            self.name = " ".join(self.filename().split(".")[:-1])
+            super(AttachedFileBase, self).save(*args, **kwargs)
+
+        signals.model_saved.send(sender=self)
 
     def filename(self):
         return str(os.path.basename(self.file.path))
