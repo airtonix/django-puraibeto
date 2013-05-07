@@ -66,7 +66,7 @@ class AttachedFileBase(models.Model):
         )
 
     def __unicode__(self):
-        return self.file if self.file else self.uuid
+        return self.file.path if self.file else self.uuid
 
     def get_download_url(self, *args, **kwargs):
         return reverse('puraibeto_download', kwargs={
@@ -79,11 +79,11 @@ class AttachedFileBase(models.Model):
         #     surl(r'^download/<contenttype_pk:#>/<object_pk:#>/<pk:#>/<uuid:uuid>-<filename:f>$',
 
     def save(self, *args, **kwargs):
-        if not self.pk:
+        if self.file and not self.name or len(self.name) <= 0:
+            self.name = os.path.basename(self.file.path.split(".")[0])
             super(AttachedFileBase, self).save(*args, **kwargs)
 
-        if not self.name or len(self.name) <= 0:
-            self.name = " ".join(self.filename().split(".")[:-1])
+        if not self.pk:
             super(AttachedFileBase, self).save(*args, **kwargs)
 
         signals.model_saved.send(sender=self)
