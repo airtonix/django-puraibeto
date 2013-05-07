@@ -66,7 +66,7 @@ class AttachedFileBase(models.Model):
         )
 
     def __unicode__(self):
-        return self.name
+        return self.file
 
     def get_download_url(self, *args, **kwargs):
         return reverse('puraibeto_download', kwargs={

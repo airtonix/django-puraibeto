@@ -41,18 +41,21 @@ class Command(NoArgsCommand):
 
         for item in PrivateFile.objects.all():
             if item.file is None:
+                print("ignoring", item)
                 continue
 
             itempath = item.file.path
 
             if not os.path.exists(itempath):
                 if delete_orphans:
+                    print("Deleting {}".format(item.file))
                     item.delete()
 
                 if blank_orphans:
-                    print("Blanking {} {}".format(item.uuid, item.file))
+                    print("Blanking {}".format(item.file))
                     item.file = ""
                     item.save()
+
                 continue
 
             if " " in itempath:
