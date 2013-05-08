@@ -11,7 +11,7 @@ from classytags.helpers import AsTag, InclusionTag
 
 from ..conf import settings
 from . import models
-
+from ..lib import sizify
 
 logger = logging.getLogger(__name__)
 register = Library()
@@ -64,3 +64,6 @@ class PrivateFileViewTag(PrivateFileBaseTag):
             ('end{0}'.format(name), 'no_cant'),
         ],
     )
+
+
+register.filter(sizify)
