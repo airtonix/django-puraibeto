@@ -1,5 +1,4 @@
 from django.db.models.fields.files import FileField, FieldFile
-from django.core.urlresolvers import reverse
 
 
 class PrivateFieldFile(FieldFile):
@@ -29,3 +28,7 @@ class PrivateFileField(FileField):
         super(PrivateFileField, self).__init__(verbose_name, name, upload_to, storage, **kwargs)
         self.condition = condition
         self.attachment = attachment
+
+
+from south.modelsinspector import add_introspection_rules
+add_introspection_rules([], ["^puraibeto\.fields\.PrivateFileField"])

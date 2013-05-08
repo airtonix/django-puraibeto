@@ -23,12 +23,10 @@ class PrivateFileMixin(object):
     check_modified = True
     model = models.PrivateFile
     pk_kwarg = "pk"
-    contenttype_kwarg = 'contenttype'
     contenttypepk_kwarg = "contenttype_pk"
     objectpk_kwarg = "object_pk"
 
     def get_queryset(self):
-        contenttype = self.kwargs.get(self.contenttype_kwarg)
         contenttype_pk = self.kwargs.get(self.contenttypepk_kwarg)
         object_pk = self.kwargs.get(self.objectpk_kwarg)
 
@@ -40,7 +38,6 @@ class PrivateFileMixin(object):
 
     def get_object(self, queryset):
         self.object = queryset.get(**{self.pk_kwarg: self.kwargs.get(self.pk_kwarg)})
-
 
 
 class BasePrivateFileView(PrivateFileMixin, SingleObjectMixin, View):
@@ -56,7 +53,7 @@ class BasePrivateFileView(PrivateFileMixin, SingleObjectMixin, View):
         super(BasePrivateFileView, self).get_object(queryset)
 
         field_file = getattr(self.object, 'file', None)
-        if not settings.PURAIBETO_PERMISSION_CANDOWNLOAD in get_perms(self.request.user, self.object):
+        if not self.request.user.has_perm(settings.PURAIBETO_PERMISSION_CANDOWNLOAD, self.object):
             raise PermissionDenied
 
         if not field_file:
@@ -68,7 +65,6 @@ class BasePrivateFileView(PrivateFileMixin, SingleObjectMixin, View):
         self.statobj = os.stat(field_file.path)
         self.basename = os.path.basename(field_file.path)
         return self.object
-
 
     def set_headers(self):
         field_file = self.object.file
