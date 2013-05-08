@@ -10,6 +10,8 @@ from django.utils.translation import ugettext_lazy as _
 from django.template.defaultfilters import slugify
 from django.core.urlresolvers import reverse
 
+
+
 from . import fields
 from . import signals
 from .conf import settings
@@ -55,6 +57,7 @@ class AttachedFileBase(models.Model):
                             default=lambda: str(uuid4()))
     name = models.CharField(verbose_name=_('Name'),
                             blank=True, null=True, max_length=255)
+    size = models.PositiveIntegerField(verbose_name=_('Size'), default=0)
     description = models.TextField(verbose_name=("Description"),
                                    blank=True, null=True, max_length=255)
 
@@ -78,12 +81,18 @@ class AttachedFileBase(models.Model):
         })
         #     surl(r'^download/<contenttype_pk:#>/<object_pk:#>/<pk:#>/<uuid:uuid>-<filename:f>$',
 
+    def get_size(self):
+        if os.path.exists(self.file.path):
+            return "%0.1f KB" % (os.path.getsize(self.file.path)/(1024.0))
+        return "0 MB"
+
     def save(self, *args, **kwargs):
         if self.file and not self.name or len(self.name) <= 0:
             self.name = os.path.basename(self.file.path.split(".")[0])
             super(AttachedFileBase, self).save(*args, **kwargs)
 
         if not self.pk:
+            self.size = self.get_size()
             super(AttachedFileBase, self).save(*args, **kwargs)
 
         signals.model_saved.send(sender=self)
