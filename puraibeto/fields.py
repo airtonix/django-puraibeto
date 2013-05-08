@@ -31,4 +31,4 @@ class PrivateFileField(FileField):
 
 
 from south.modelsinspector import add_introspection_rules
-add_introspection_rules([], ["^puraibeto\.fields\.PrivateFieldFile"])
+add_introspection_rules([], ["^puraibeto\.fields\.PrivateFileField"])
