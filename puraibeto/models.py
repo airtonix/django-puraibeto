@@ -10,6 +10,7 @@ from django.utils.translation import ugettext_lazy as _
 from django.template.defaultfilters import slugify
 from django.core.urlresolvers import reverse
 
+from django_extensions.db import TimeStampedModel
 
 from . import fields
 from . import lib
@@ -112,5 +113,5 @@ class AttachedFileBase(models.Model):
             return user.has_perm(settings.PURAIBETO_PERMISSION_CANDOWNLOAD, user_or_group=user, obj=self)
 
 
-class PrivateFile(AttachedFileBase):
+class PrivateFile(TimeStampedModel, AttachedFileBase):
     pass
