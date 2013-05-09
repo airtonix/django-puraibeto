@@ -10,7 +10,7 @@ from django.utils.translation import ugettext_lazy as _
 from django.template.defaultfilters import slugify
 from django.core.urlresolvers import reverse
 
-from django_extensions.db import TimeStampedModel
+from django_extensions.db.models import TimeStampedModel
 
 from . import fields
 from . import lib
