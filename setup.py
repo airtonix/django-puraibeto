@@ -12,6 +12,7 @@ setup(name="django-puraibeto",
       install_requires=['django-appconf==0.4.1',
                         'django-classy-tags',
                         'django-guardian',
+                        'django-extensions==1.1.1',
                         'surlex',
                         ]
       )
